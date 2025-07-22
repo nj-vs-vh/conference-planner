@@ -1,0 +1,5 @@
+venv
+*.md
+!README.md
+*.ics
+*.json

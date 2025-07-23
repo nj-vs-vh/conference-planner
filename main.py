@@ -102,7 +102,9 @@ def rank(talks: dict[str, list[Event]]) -> str:
         ratings = [rating for _, rating in room_ratings]
 
         for _ in range(100):
-            compare_rooms = list(set(random.choices(rooms, weights=ratings, k=2)))
+            compare_rooms = list(
+                set(random.choices(rooms, weights=[r**2 for r in ratings], k=2))
+            )
             if len(compare_rooms) == 2:
                 break
         else:
@@ -137,17 +139,22 @@ def rank(talks: dict[str, list[Event]]) -> str:
                 left_lines, right_lines, fillvalue=None
             ):
                 print((left or filler) + " | " + (right or filler))
-            ctrl = input("[<>sq] ")
-            if ctrl == "q":
-                return rooms[0]
-            elif ctrl == "<":
-                rating_store.record_better_than(talk1, talk2)
-            elif ctrl == ">":
-                rating_store.record_better_than(talk2, talk1)
-            elif ctrl == "s":
-                print("Skipping")
-            else:
-                print("Unexpected input, ignoring!")
+            while True:
+                ctrl = input("[<>sq] ")
+                if ctrl == "q":
+                    return rooms[0]
+                elif ctrl == "<":
+                    rating_store.record_better_than(talk1, talk2)
+                    break
+                elif ctrl == ">":
+                    rating_store.record_better_than(talk2, talk1)
+                    break
+                elif ctrl == "s":
+                    print("Skipping")
+                    break
+                else:
+                    print("Unexpected input!")
+
             break
 
 

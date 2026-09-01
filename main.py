@@ -36,7 +36,7 @@ class RatingStore:
     def __init__(self) -> None:
         self._file = Path("comparisons.json")
         if not self._file.exists():
-            self._file.write_text(json.dumps(dict()))
+            self._file.write_text(json.dumps({}))
 
     def _key(self, talk: Event) -> str:
         title: str = talk.get("SUMMARY", "")
@@ -71,23 +71,32 @@ def bold(t: str) -> str:
     return f"\033[1m{t}\033[0m"
 
 
-def format_column(text: str, colwidth: int) -> list[str]:
+def format_column(paragraphs: list[str], colwidth: int) -> list[str]:
     res: list[str] = []
-    for paragraph in text.splitlines():
+    for paragraph_idx, paragraph in enumerate(paragraphs):
+        paragraph = paragraph.strip()
+        format = bold if paragraph_idx == 0 else lambda x: x
         if not paragraph:
             continue
         current_line = ""
+
+        words: list[str] = []
         for word in paragraph.split():
+            while len(word) > colwidth:
+                words.append(word[:colwidth])
+                word = word[colwidth:]
+            words.append(word)
+
+        for word in words:
             if len(current_line) + 1 + len(word) > colwidth:
-                res.append(current_line.ljust(colwidth))
+                res.append(format(current_line.ljust(colwidth)))
                 current_line = ""
             if current_line:
                 current_line += " "
             current_line += word
+
         if current_line:
-            res.append(current_line.ljust(colwidth))
-    # TODO: bold title
-    # res[0] = bold(res[0])
+            res.append(format(current_line.ljust(colwidth)))
     return res
 
 
@@ -134,8 +143,8 @@ def rank(talks: dict[str, list[Event]]) -> str:
 
             term_size = os.get_terminal_size().columns
             column_width = term_size // 2 - 10
-            left_lines = format_column(talk1.get("SUMMARY") + "\n" + talk1.get("DESCRIPTION"), column_width)
-            right_lines = format_column(talk2.get("SUMMARY") + "\n" + talk2.get("DESCRIPTION"), column_width)
+            left_lines = format_column([talk1.get("SUMMARY"), *talk1.get("DESCRIPTION").splitlines()], column_width)
+            right_lines = format_column([talk2.get("SUMMARY"), *talk2.get("DESCRIPTION").splitlines()], column_width)
             print(("=" * column_width) + " | " + ("=" * column_width))
             filler = " " * column_width
             for left, right in itertools.zip_longest(left_lines, right_lines, fillvalue=None):
@@ -167,8 +176,8 @@ def export_to_markdown(talks: list[Event], section_title: str, filename: str) ->
         descr_lines = [line for line in talk.get("DESCRIPTION", "").splitlines() if line.strip()]
         quote_descr = ["> " + line for line in descr_lines if not line.startswith("http")]
         try:
-            indico_link = [f"[indico]({line})" for line in descr_lines if "indico.cern.ch" in line][0]
-        except Exception:
+            indico_link = next(f"[indico]({line})" for line in descr_lines if "indico.cern.ch" in line)
+        except Exception:  # noqa: BLE001
             indico_link = f"[indico]({talk.get('URL')})"
         paragraphs.append(f"### {talk.get('SUMMARY')}\n{indico_link}\n{'\n'.join(quote_descr)}\n\n- ")
     result = f"## {section_title}\n\n" + "\n".join(paragraphs)
@@ -198,7 +207,7 @@ class Session:
     def __post_init__(self) -> None:
         talks_by_room: dict[str, list[Event]] = defaultdict(list)
 
-        for talk in talks:
+        for talk in self.talks:
             if talk.get("SUMMARY") == ".":
                 continue
             room: str = talk.get("LOCATION", "").strip()

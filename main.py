@@ -28,7 +28,7 @@ def end_time(e: Event) -> datetime.datetime:
     return dt.astimezone(TZ)
 
 
-def format_talk(e: Event) -> str:
+def format_talk(talk: Event) -> str:
     return f"{start_time(talk)} - {end_time(talk).time()}: [{talk.get('LOCATION')}] {talk.get('SUMMARY')}"
 
 

@@ -179,7 +179,7 @@ def export_to_markdown(talks: list[Event], section_title: str, filename: str) ->
             indico_link = next(f"[indico]({line})" for line in descr_lines if "indico.cern.ch" in line)
         except Exception:  # noqa: BLE001
             indico_link = f"[indico]({talk.get('URL')})"
-        paragraphs.append(f"### {talk.get('SUMMARY')}\n{indico_link}\n{'\n'.join(quote_descr)}\n\n- ")
+        paragraphs.append(f"### {talk.get('SUMMARY')}\n{indico_link}\n{'\n\n'.join(quote_descr)}\n\n")
     result = f"## {section_title}\n\n" + "\n".join(paragraphs)
     Path(filename).write_text(result)
 

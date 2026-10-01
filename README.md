@@ -1,9 +1,11 @@
-A script to plan attendance of parallel conference sessions based
-on pairwise preference inducing a probabilistic ranking.
+# confplan
+
+A script to choose parallel conference sessions to attend based
+on pairwise talk preference inducing an implicit ranking.
 
 How to use:
 ```bash
-python main.py myconf.ics --date 2026-09-03 --session 4
+python confplan.py myconf.ics --date 2026-09-03 --session 4
 ```
 
 - feed an .ics file with conference talks to the script

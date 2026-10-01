@@ -1,10 +1,16 @@
 A script to plan attendance of parallel conference sessions based
-on pairwise preference comparison inducing a probabilistic ranking.
-Proof-of-concept version for ICRC2025.
+on pairwise preference inducing a probabilistic ranking.
 
-Outline:
-- parse .ics file with conference talks
-- extract parallel session (ad hoc)
-- obtain from user a series of choices (preferences) between talks in parallel sessions,
-  updating session "ratings" with TrueSkill algorithm
-- finally, select the highest-ranking session and export its timetable to Markdown
+How to use:
+```bash
+python main.py myconf.ics --date 2026-09-03 --session 4
+```
+
+- feed an .ics file with conference talks to the script
+- choose session to plan
+- make a series of choices preferring one talk over another; the TrueSkill algorithm
+  is used to update a probabilistic preference score for every parallel session,
+  computed as an average preference of the talks in it
+- after some number of choices the preferences converge and it's safe to select
+  the highest-ranking session to attend
+- the script then exports the chosen session's talks to a Markdown doc
